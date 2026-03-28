@@ -1,0 +1,21 @@
+# VEats Backend — Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --ignore-scripts
+
+# Copy source
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build
+RUN npm run build
+
+EXPOSE 3001
+
+CMD ["npm", "run", "start:dev"]

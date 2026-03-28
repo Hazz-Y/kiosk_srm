@@ -1,0 +1,171 @@
+// VEats — Prisma Schema
+// Run: npx prisma migrate dev --name init
+// Seed: npx prisma db seed
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ──
+
+enum UserRole {
+  CUSTOMER
+  VENDOR
+  ADMIN
+  MANAGEMENT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ── Models ──
+
+model User {
+  id        String   @id @default(uuid())
+  fullName  String   @map("full_name")
+  email     String   @unique
+  phone     String?
+  password  String
+  role      UserRole @default(CUSTOMER)
+  wallet    Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  orders  Order[]
+  foodLog FoodLog[]
+
+  @@map("users")
+}
+
+model Vendor {
+  id                String       @id @default(uuid())
+  name              String
+  outletCode        String       @unique @map("outlet_code")
+  location          String?
+  commissionPercent Decimal      @default(10) @map("commission_percent") @db.Decimal(5, 2)
+  status            VendorStatus @default(ACTIVE)
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  menuItems   MenuItem[]
+  orderItems  OrderItem[]
+  settlements Settlement[]
+
+  @@map("vendors")
+}
+
+model MenuItem {
+  id          String  @id @default(uuid())
+  vendorId    String  @map("vendor_id")
+  name        String
+  description String?
+  imagePath   String? @map("image_path")
+  price       Decimal @db.Decimal(10, 2)
+  isVeg       Boolean @default(true) @map("is_veg")
+  calories    Int     @default(0)
+  proteinG    Decimal @default(0) @map("protein_g") @db.Decimal(6, 2)
+  carbsG      Decimal @default(0) @map("carbs_g") @db.Decimal(6, 2)
+  fatG        Decimal @default(0) @map("fat_g") @db.Decimal(6, 2)
+  isAvailable Boolean @default(true) @map("is_available")
+
+  vendor     Vendor      @relation(fields: [vendorId], references: [id])
+  orderItems OrderItem[]
+  foodLog    FoodLog[]
+
+  @@index([vendorId])
+  @@map("menu_items")
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  orderStatus   OrderStatus   @default(PLACED) @map("order_status")
+  pickupCode    String?       @map("pickup_code")
+  metadata      Json?         @db.JsonB
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  orderId    String  @map("order_id")
+  menuItemId String  @map("menu_item_id")
+  vendorId   String  @map("vendor_id")
+  quantity   Int
+  itemPrice  Decimal @map("item_price") @db.Decimal(10, 2)
+
+  order    Order    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Settlement {
+  id           String       @id @default(uuid())
+  vendorId     String       @map("vendor_id")
+  periodStart  DateTime     @map("period_start") @db.Date
+  periodEnd    DateTime     @map("period_end") @db.Date
+  totalSales   Decimal      @map("total_sales") @db.Decimal(10, 2)
+  commission   Decimal      @db.Decimal(10, 2)
+  payoutAmount Decimal      @map("payout_amount") @db.Decimal(10, 2)
+  payoutStatus PayoutStatus @default(PENDING) @map("payout_status")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@map("settlements")
+}
+
+model FoodLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  menuItemId String   @map("menu_item_id")
+  quantity   Int      @default(1)
+  calories   Int      @default(0)
+  proteinG   Decimal  @default(0) @map("protein_g") @db.Decimal(6, 2)
+  carbsG     Decimal  @default(0) @map("carbs_g") @db.Decimal(6, 2)
+  fatG       Decimal  @default(0) @map("fat_g") @db.Decimal(6, 2)
+  loggedAt   DateTime @default(now()) @map("logged_at")
+
+  user     User     @relation(fields: [userId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("food_log")
+}

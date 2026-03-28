@@ -1,0 +1,66 @@
+# VEats — Docker Compose for Local Development
+# Run: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # ── PostgreSQL ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: veats-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: veats
+      POSTGRES_PASSWORD: veats_dev
+      POSTGRES_DB: veats_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - veats_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U veats -d veats_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (NestJS) ──
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infra/Dockerfile.backend
+    container_name: veats-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://veats:veats_dev@postgres:5432/veats_dev?schema=public
+      JWT_SECRET: docker-dev-jwt-secret-change-me
+      NODE_ENV: development
+    ports:
+      - '3001:3001'
+    volumes:
+      - ../backend/src:/app/src
+    command: npm run start:dev
+
+  # ── Frontend (Next.js dev) ──
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../infra/Dockerfile.frontend
+    container_name: veats-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - '3000:3000'
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  veats_pgdata:

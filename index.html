@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SmartServe Kiosk — Inclusive Self-Service Ordering</title>
+    <meta name="description" content="AI-assisted, inclusive self-service food ordering kiosk with sign language support, guided mode, and adaptive accessibility features.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="app" class="kiosk-container">
+        <!-- GLOBAL HEADER (Zomato-style) -->
+        <header class="app-header">
+            <div class="header-top">
+                <div class="location-wrap">
+                    <span class="location-icon">📍</span>
+                    <div class="location-text">
+                        <div class="location-title">Home <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                        <div class="location-sub" id="locationSub">Mayura Vista Apartments (PG), Kolath...</div>
+                    </div>
+                </div>
+                <div class="profile-actions" style="z-index:9999; position:relative;">
+                    <button class="action-icon global-cart-btn" id="globalCartBtn" aria-label="View cart" onclick="openCart()" style="position:relative; border:none; background:none; color:inherit; cursor:pointer; z-index:9999; padding: 10px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 20C9 21.1 8.1 22 7 22C5.9 22 5 21.1 5 20C5 18.9 5.9 18 7 18C8.1 18 9 18.9 9 20ZM17 18C15.9 18 15 18.9 15 20C15 21.1 15.9 22 17 22C18.1 22 19 21.1 19 20C19 18.9 18.1 18 17 18ZM7.17 14.75L7.2 14.63L8.1 13H15.55C16.3 13 16.96 12.59 17.3 11.97L21.16 4.96L19.42 4H19.41L18.31 6L15.55 11H8.53L8.4 10.73L5.16 4H1V6H3.27L6.86 13.59L5.5 16.03C5.17 16.6 5.58 17.3 6.25 17.3H19V15.3H6.42" fill="currentColor"/></svg>
+                        <span class="cart-badge" id="globalCartBadge" style="position:absolute; top:-2px; right:-2px; z-index:10000; background:var(--accent); color:white; font-size:12px; font-weight:bold; height:18px; min-width:18px; display:flex; align-items:center; justify-content:center; border-radius:10px;">0</span>
+                    </button>
+                    <div class="profile-pic"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile"></div>
+                    <div class="action-icon avatar-initial">H</div>
+                </div>
+            </div>
+            
+            <div class="search-wrap">
+                <div class="search-bar">
+                    <span class="search-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                    <input type="text" placeholder="Restaurant name or a dish..." readonly>
+                    <span class="mic-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v10m-5-5a5 5 0 0010 0m-5 9v3m-3 0h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCREENS CONTAINER -->
+        <div class="screens-wrapper" id="screensWrapper">
+
+            <!-- ========== HOME SCREEN ========== -->
+            <section class="screen screen-home active" id="screenHome">
+                
+                <!-- Horizontal Category Filter -->
+                <div class="category-scroll-container">
+                    <div class="category-scroll" id="categoryGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <!-- Restaurants List -->
+                <div class="restaurants-section">
+                    <div class="list-count" id="listCount">369 RESTAURANTS DELIVERING TO YOU</div>
+                    <h3 class="section-heading">Featured</h3>
+                    
+                    <div class="restaurant-list" id="restaurantList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Spacer for sticky UI -->
+                <div style="height: 120px;"></div>
+
+                <!-- Guided Mode Toggle -->
+                <div class="guided-toggle-wrap">
+                    <button class="guided-toggle" id="guidedToggle">
+                        <span class="guided-icon">🧭</span>
+                        <span class="guided-text">Guided Mode</span>
+                        <span class="toggle-switch" id="toggleSwitch">
+                            <span class="toggle-knob"></span>
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ========== MENU SCREEN ========== -->
+            <section class="screen screen-menu" id="screenMenu">
+                <!-- Menu Header -->
+                <div class="menu-header">
+                    <button class="back-btn" id="menuBackBtn" aria-label="Go back">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <h2 class="menu-title" id="menuTitle">Burgers</h2>
+                </div>
+
+                <!-- Recommended Section -->
+                <div class="recommended-section" id="recommendedSection">
+                    <h3 class="section-label">⭐ Recommended for you</h3>
+                    <div class="recommended-scroll" id="recommendedScroll">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Menu Items -->
+                <div class="menu-items-list" id="menuItemsList">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ========== CART SCREEN ========== -->
+            <section class="screen screen-cart" id="screenCart">
+                <div class="menu-header">
+                    <button class="back-btn" id="cartBackBtn" aria-label="Go back">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <h2 class="menu-title">Your Cart</h2>
+                    <span class="cart-item-count" id="cartItemCount">0 items</span>
+                </div>
+
+                <!-- Cart Empty State -->
+                <div class="cart-empty" id="cartEmpty">
+                    <span class="cart-empty-icon">🛒</span>
+                    <p class="cart-empty-text">Your cart is empty</p>
+                    <p class="cart-empty-sub">Browse the menu and add items</p>
+                    <button class="btn-primary cart-empty-browse" id="cartBrowseBtn">Browse Menu</button>
+                </div>
+
+                <!-- Cart Items List -->
+                <div class="cart-items-wrap" id="cartItemsWrap">
+                    <div class="cart-items-list" id="cartItemsList">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Cart Summary -->
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="cartSubtotal">₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Taxes & Charges</span>
+                            <span id="cartTax">₹0</span>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span>Total</span>
+                            <span id="cartTotal">₹0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-pay" id="proceedPayBtn">
+                        <span>Proceed to Pay</span>
+                        <span class="btn-pay-amount" id="payBtnAmount">₹0</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ========== PAYMENT SCREEN / CHECKOUT ========== -->
+            <section class="screen screen-payment" id="screenPayment">
+                <div class="menu-header">
+                    <button class="back-btn" id="payBackBtn" aria-label="Go back">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <h2 class="menu-title">Order Summary</h2>
+                    <span></span>
+                </div>
+
+                <div class="payment-content" id="paymentContent">
+                    <div class="pay-amount-display">
+                        <span class="pay-label">Total Amount to Pay</span>
+                        <span class="pay-amount" id="payAmount">₹0</span>
+                    </div>
+
+                    <!-- Skip Fake QR -> Real Payment Trigger -->
+                    <div class="checkout-actions">
+                        <button class="zomato-btn" id="cardPayBtn">Pay Securely via Razorpay</button>
+                        <p class="secure-text">🔒 100% Secure Payments</p>
+                    </div>
+                </div>
+
+                <!-- Payment Processing -->
+                <div class="payment-processing hidden" id="paymentProcessing">
+                    <div class="processing-animation">
+                        <div class="processing-ring"></div>
+                        <span class="processing-icon">💳</span>
+                    </div>
+                    <p class="processing-text">Processing Payment...</p>
+                    <p class="processing-sub">Please wait</p>
+                </div>
+
+                <!-- Payment Success -->
+                <div class="payment-success hidden" id="paymentSuccess">
+                    <div class="success-animation">
+                        <div class="success-circle">
+                            <svg class="success-check" viewBox="0 0 52 52" width="80" height="80">
+                                <circle class="success-circle-bg" cx="26" cy="26" r="25" fill="none" stroke="#4ade80" stroke-width="2"/>
+                                <path class="success-check-path" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M14 27l7 7 16-16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h2 class="success-title">Payment Successful!</h2>
+                    <p class="success-sub">Your order #<span id="orderNumber">2847</span> is being prepared</p>
+                    <div class="success-details">
+                        <div class="success-row">
+                            <span>Order ID</span>
+                            <span id="successOrderId">#2847</span>
+                        </div>
+                        <div class="success-row">
+                            <span>Amount Paid</span>
+                            <span id="successAmount">₹0</span>
+                        </div>
+                        <div class="success-row">
+                            <span>Est. Ready</span>
+                            <span>~10 mins</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary success-done" id="successDoneBtn">Done — New Order</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========== FLOATING ELEMENTS ========== -->
+
+        <!-- Sign Language FAB -->
+        <button class="fab-sign" id="fabSign" aria-label="Start Sign Language Mode">
+            <span class="fab-sign-icon">🤟</span>
+            <span class="fab-sign-label">Sign</span>
+        </button>
+
+        <!-- Gesture Detection Overlay -->
+        <div class="gesture-overlay hidden" id="gestureOverlay">
+            <div class="gesture-header">
+                <span class="gesture-title">🤟 Sign Language Mode</span>
+                <button class="gesture-close" id="gestureClose" aria-label="Close sign language mode">✕</button>
+            </div>
+            <div class="gesture-camera" id="gestureCamera">
+                <video id="liveVideo" autoplay playsinline class="hidden"></video>
+                <div class="camera-placeholder" id="cameraPlaceholder">
+                    <div class="camera-frame">
+                        <div class="camera-corner tl"></div>
+                        <div class="camera-corner tr"></div>
+                        <div class="camera-corner bl"></div>
+                        <div class="camera-corner br"></div>
+                    </div>
+                    <span class="camera-text">📷 Camera Feed</span>
+                    <p class="camera-sub">Show gestures to navigate</p>
+                </div>
+            </div>
+            <div class="gesture-detected" id="gestureDetected">
+                <span class="gesture-label">Detected:</span>
+                <span class="gesture-value" id="gestureValue">Waiting...</span>
+            </div>
+            
+            <!-- ISL Assistive Guide Popup (Appears when confused) -->
+            <div class="isl-guide-popup hidden" id="islGuidePopup">
+                <div class="isl-guide-header">
+                    <span class="isl-guide-icon">💡</span> Need Help Navigating?
+                </div>
+                <div class="isl-guide-body">
+                    <ul class="isl-guide-list">
+                        <li><strong>1️⃣</strong> Move Cursor UP / LEFT</li>
+                        <li><strong>2️⃣</strong> Move Cursor DOWN / RIGHT</li>
+                        <li><strong>3️⃣</strong> SELECT current item</li>
+                        <li><strong>4️⃣</strong> Open CART</li>
+                        <li><strong>A-Z</strong> Jump to Dish (e.g. 'B' for Burger)</li>
+                    </ul>
+                </div>
+                <div class="isl-guide-footer">Show any valid gesture to dismiss</div>
+            </div>
+
+            <div class="gesture-actions">
+                <div class="gesture-hint">
+                    <span class="hint-gesture">👆</span>
+                    <span class="hint-text">Point = Select</span>
+                </div>
+                <div class="gesture-hint">
+                    <span class="hint-gesture">👋</span>
+                    <span class="hint-text">Wave = Next</span>
+                </div>
+                <div class="gesture-hint">
+                    <span class="hint-gesture">✊</span>
+                    <span class="hint-text">Fist = Confirm</span>
+                </div>
+                <div class="gesture-hint">
+                    <span class="hint-gesture">✌️</span>
+                    <span class="hint-text">Peace = Pay</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guided Mode Tooltip -->
+        <div class="guided-tooltip hidden" id="guidedTooltip">
+            <div class="tooltip-arrow"></div>
+            <div class="tooltip-content">
+                <p class="tooltip-text" id="tooltipText">Tap a category to start ordering</p>
+                <div class="tooltip-actions">
+                    <button class="tooltip-btn" id="tooltipNext">Got it →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant Floating Button -->
+        <button class="fab-ai hidden" id="fabAI" aria-label="AI Assistant">
+            <div class="ai-pulse"></div>
+            <span class="ai-icon">🤖</span>
+        </button>
+
+        <!-- AI Assistant Panel -->
+        <div class="ai-panel hidden" id="aiPanel">
+            <div class="ai-panel-header">
+                <span>🤖 AI Assistant</span>
+                <button class="ai-panel-close" id="aiPanelClose">✕</button>
+            </div>
+            <div class="ai-panel-body">
+                <div class="ai-message">
+                    <p>Hi! I can help you order. Try saying or signing:</p>
+                    <div class="ai-suggestions">
+                        <button class="ai-sugg" data-action="recommend">"What's popular?"</button>
+                        <button class="ai-sugg" data-action="veg">"Show veg options"</button>
+                        <button class="ai-sugg" data-action="help">"Help me order"</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Idle Inactivity Overlay -->
+        <div class="idle-overlay hidden" id="idleOverlay">
+            <div class="idle-content">
+                <span class="idle-icon">👋</span>
+                <h2 class="idle-title">Need Help?</h2>
+                <p class="idle-sub">It looks like you might need assistance.<br>Would you like to enable Guided Mode?</p>
+                <div class="idle-actions">
+                    <button class="btn-secondary" id="idleDismiss">I'm fine</button>
+                    <button class="btn-primary" id="idleGuide">Enable Guide</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

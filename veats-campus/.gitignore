@@ -1,0 +1,48 @@
+# VEats — Ignore patterns
+node_modules/
+dist/
+.next/
+*.js.map
+*.d.ts
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.sqlite
+*.sqlite-journal
+
+# Prisma
+backend/prisma/migrations/*/migration.sql
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Flutter
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/ios/Pods/
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Test
+coverage/
+# Vercel
+.vercel/
