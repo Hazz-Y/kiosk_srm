@@ -78,7 +78,7 @@ export default function SignLangPreview({ active, lastGesture, fingerCount }: Si
                     {connected ? (
                         <img
                             ref={imgRef}
-                            src="http://localhost:8766/stream"
+                            src="http://127.0.0.1:8766/stream"
                             alt="Camera feed"
                             className="sign-preview-video"
                         />

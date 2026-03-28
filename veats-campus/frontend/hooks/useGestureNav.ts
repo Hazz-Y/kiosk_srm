@@ -171,7 +171,7 @@ export function useGestureNav(enabled: boolean): GestureState {
         const connect = () => {
             if (socketRef.current?.readyState === WebSocket.OPEN) return;
             
-            const socket = new WebSocket('ws://localhost:8765');
+            const socket = new WebSocket('ws://127.0.0.1:8765');
             socketRef.current = socket;
 
             socket.onopen = () => {
