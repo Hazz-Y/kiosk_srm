@@ -1,6 +1,9 @@
-# Order@Ease (Kiosk SRM) 🍽️🤟
+# Order@Ease 🍽️🤟
 
 **Order@Ease** is a futuristic, touchless campus food ordering kiosk system designed for SRM University. It combines a premium Next.js frontend with an AI-powered hand gesture and sign language recognition backend. This allows students to smoothly navigate menus, add items to their cart, and checkout—all without touching the screen.
+
+🔗 **Live Deployment**: [https://orderatease.vercel.app](https://orderatease.vercel.app)  
+👥 **Contributors**: [Hazz-Y](https://github.com/Hazz-Y) & [SamriddhiGanguly05](https://github.com/SamriddhiGanguly05)
 
 ---
 
